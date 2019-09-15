@@ -3,6 +3,7 @@ from requests import get
 from requests.exceptions import RequestException
 
 from process import is_running
+from settings import CLIENT_PROCESS_NAME
 
 BUGGED_DESCRIPTION = (
     'RSO Server error: '
@@ -11,11 +12,11 @@ BUGGED_DESCRIPTION = (
 )
 
 
-def is_client_open(connection, *_):
+def is_client_open(*_):
     ''' Returns if client is open '''
-    if connection.url is None:
+    if not is_running(CLIENT_PROCESS_NAME):
         return []
-    return ['client_connected']
+    return ['client_open']
 
 
 def is_client_connected(connection, *_):
@@ -94,7 +95,7 @@ def is_leaverbuster_warning(connection, status):
 
 
 STATUS_LIST = [
-    'is_client_open',
+    'client_open',
     'client_connected',
     'lcu_connected',
     'login_in_progress',
@@ -103,6 +104,7 @@ STATUS_LIST = [
 ]
 
 STATUS_FUNCTIONS = [
+    is_client_open,
     is_client_connected,
     is_lcu_connected,
     check_login_session,
