@@ -14,6 +14,7 @@ from macros import do_macro, get_macro
 from macros.exceptions import CompletedAccount
 from settings import CSV_DELIMITERS, OUTPUT_DIR
 from status import display_status, get_status
+from process import close_league_client
 
 BARRIER = threading.Barrier(2)
 
@@ -48,7 +49,7 @@ def main(stdscr):
             terminate()
         start_time = time.time()
         stdscr.clear()
-        status = get_status(connection)
+        status = get_status(connection, current)
         try:
             macro = get_macro(status)
             output = do_macro(connection, macro, current)
@@ -72,3 +73,4 @@ if __name__ == '__main__':
     threading.Thread(target=curses.wrapper, args=(main,), daemon=True).start()
     keyboard.add_hotkey('ctrl+shift+q', terminate)
     terminate()
+    close_league_client()

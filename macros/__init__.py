@@ -1,11 +1,14 @@
 ''' Module to do macro tasks '''
 import requests
+from process import open_league_client, restart_league_client
 from .chest import open_chests
 from .exceptions import CompletedAccount
 
 
 def get_macro(status):
     ''' Returns which macro to run '''
+    if 'wrong_account_logged_in' in status:
+        return 'restart_client'
     if 'login_succeed' in status:
         return 'open_chests'
     if ('lcu_connected' in status and
@@ -33,14 +36,14 @@ def login(connection, account):
         return {'error': 'RequestException'}
 
 
-HANDLERS = {
-    'login': login,
-    'open_chests': open_chests,
-}
-
-
 def do_macro(connection, macro, account):
     ''' Runs a macro using the handler mapping '''
-    if macro not in HANDLERS:
+    handlers = {
+        'login': [login, (connection, account)],
+        'open_chests': [open_chests, (connection, account)],
+        'open_client': [open_league_client, ()],
+        'restart_client': [restart_league_client, ()],
+    }
+    if macro not in handlers:
         return {'error': 'Macro not implemented'}
-    return HANDLERS[macro](connection, account)
+    return handlers[macro][0](*handlers[macro][1])

@@ -26,7 +26,7 @@ def is_client_connected(connection, *_):
     return ['client_connected']
 
 
-def is_lcu_connected(connection, status):
+def is_lcu_connected(connection, status, *_):
     ''' Returns if lcu is connected '''
     if 'client_connected' not in status:
         return []
@@ -48,7 +48,7 @@ def is_lcu_connected(connection, status):
     return []
 
 
-def check_login_session(connection, status):
+def check_login_session(connection, status, *_):
     ''' Checks login session and returns status '''
     if 'lcu_connected' not in status:
         return []
@@ -76,7 +76,7 @@ def check_login_session(connection, status):
     return output
 
 
-def is_leaverbuster_warning(connection, status):
+def is_leaverbuster_warning(connection, status, *_):
     ''' Returns if leaverbuster warning exists '''
     if 'login_succeed' not in status:
         return []
@@ -90,7 +90,24 @@ def is_leaverbuster_warning(connection, status):
     res_json = res.json()
     for notification in res_json:
         if notification['type'] == 'TaintedWarning':
-            return 'leaverbuster_warning'
+            return ['leaverbuster_warning']
+    return []
+
+
+def is_wrong_account(connection, status, account):
+    ''' Returns if wrong account is logged in  '''
+    if 'login_succeed' not in status:
+        return []
+    if connection.url is None:
+        return []
+    try:
+        res = get(connection.url +
+                  '/lol-login/v1/login-platform-credentials/', **connection.kwargs)
+    except RequestException:
+        return []
+    res_json = res.json()
+    if res_json['username'].lower() != account.username.lower():
+        return ['wrong_account_logged_in']
     return []
 
 
@@ -100,6 +117,7 @@ STATUS_LIST = [
     'lcu_connected',
     'login_in_progress',
     'login_succeed',
+    'wrong_account_logged_in',
     'banned',
 ]
 
@@ -108,14 +126,15 @@ STATUS_FUNCTIONS = [
     is_client_connected,
     is_lcu_connected,
     check_login_session,
+    is_wrong_account,
 ]
 
 
-def get_status(connection):
+def get_status(connection, account):
     ''' Returns the status of league client '''
     status = []
     for func in STATUS_FUNCTIONS:
-        status += func(connection, status)
+        status += func(connection, status, account)
     return status
 
 

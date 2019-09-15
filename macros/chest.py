@@ -55,23 +55,19 @@ def forge(connection, repeat=1):
     ''' Forges key fragment to keys '''
     if repeat == 0:
         return
-    url = "https://{}/lol-loot/v1/recipes/MATERIAL_key_fragment_forge/craft?repeat={}".format(
-        connection["url"], repeat)
     requests.post(
-        url, verify=False, auth=('riot', connection["authorization"]), timeout=30,
-        json=['MATERIAL_key_fragment']
-    )
+        '{}/lol-loot/v1/recipes/MATERIAL_key_fragment_forge/craft?repeat={}'.format(
+            connection.url, repeat), json=['MATERIAL_key_fragment'], **connection.kwargs)
 
 
 def open_generic_chests(connection, account, repeat=1):
     ''' Opens a chest and saves it data to json '''
     if repeat == 0:
         return
-    url = "https://%s/lol-loot/v1/recipes/CHEST_generic_OPEN/craft?repeat=%d" % (
-        connection["url"], repeat)
     res = requests.post(
-        url, verify=False, auth=('riot', connection["authorization"]), timeout=30,
-        json=['CHEST_generic', 'MATERIAL_key'])
+        '{}/lol-loot/v1/recipes/CHEST_generic_OPEN/craft?repeat={}'.format(
+            connection.url, repeat), json=['CHEST_generic', 'MATERIAL_key'], **connection.kwargs)
+
     file_name = '{}_{}.json'.format(account.username, time.time())
     with open(os.path.join(OUTPUT_DIR, file_name), 'w') as file:
         json.dump(res.json(), file)
