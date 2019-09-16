@@ -67,6 +67,13 @@ def open_generic_chests(connection, account, repeat=1):
         '/lol-loot/v1/recipes/CHEST_generic_OPEN/craft?repeat={}'.format(
             repeat), json=['CHEST_generic', 'MATERIAL_key'])
 
-    file_name = '{}_{}.json'.format(account.username, time.time())
+    timestamp = time.time()
+    output = {
+        'username': account.username,
+        'timestamp': timestamp,
+        'response': res.json(),
+    }
+    file_name = '{}_{}.json'.format(account.username, timestamp)
+
     with open(os.path.join(OUTPUT_DIR, 'chests', file_name), 'w') as file:
-        json.dump(res.json(), file, indent=4,)
+        json.dump(output, file, indent=4,)
