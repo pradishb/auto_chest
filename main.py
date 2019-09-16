@@ -7,12 +7,14 @@ import time
 
 import keyboard
 from easygui import fileopenbox
+from requests.exceptions import RequestException
+
 
 from accounts import Account, AccountList
 from connection.connection import Connection
 from macros import do_macro, get_macro
-from macros.exceptions import CompletedAccount
-from settings import CSV_DELIMITERS, OUTPUT_DIR
+from macros.exceptions import CompletedAccount, LootRetrieveException, BadResponseException
+from settings import CSV_DELIMITERS, OUTPUT_DIR, ACTION_INTERVAL
 from status import display_status, get_status
 from process import close_league_client
 
@@ -31,8 +33,7 @@ def terminate():
 def main(stdscr):
     ''' Main function of the program '''
     output = ''
-    file_path = fileopenbox(
-        'Open account data csv, ctrl+shift+q to exit')
+    file_path = fileopenbox('Open account data csv')
     if file_path is None:
         terminate()
         return
@@ -53,13 +54,22 @@ def main(stdscr):
             return
         start_time = time.time()
         stdscr.clear()
-        status = get_status(connection, current)
+        status = []
+        macro = None
         try:
-            macro = get_macro(status)
-            output = do_macro(connection, macro, current)
-        except CompletedAccount:
-            account_list.complete()
-            output = {'description': 'Completed'}
+            status = get_status(connection, current)
+            try:
+                macro = get_macro(status)
+                output = do_macro(connection, macro, current)
+            except CompletedAccount:
+                account_list.complete()
+                output = {'description': 'Completed'}
+        except RequestException as err:
+            output = {'error': 'RequestException: {0}'.format(err)}
+        except BadResponseException:
+            output = {'error': 'BadResponseException'}
+        except LootRetrieveException:
+            output = {'error': 'LootRetrieveException'}
 
         process_time = time.time() - start_time
         stdscr.addstr('{:<30}{:.5f}s\n'.format('Process time', process_time))
@@ -68,9 +78,9 @@ def main(stdscr):
         stdscr.addstr('{:<30}{}\n'.format('Password', current.password))
         stdscr.addstr('{:<30}{}\n'.format('Macro', macro))
         stdscr.addstr('{:<30}{}\n'.format('Ouptut', output))
-        stdscr.addstr('\nctrl+shift+q to exit\n')
+        stdscr.addstr('\nctrl+shift+q to exit')
         stdscr.refresh()
-        time.sleep(1)
+        time.sleep(ACTION_INTERVAL)
 
 
 if __name__ == '__main__':

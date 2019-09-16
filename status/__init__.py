@@ -1,5 +1,4 @@
 ''' Module to find the status of league client '''
-from requests.exceptions import RequestException
 
 from process import is_running
 from settings import CLIENT_PROCESS_NAME
@@ -18,44 +17,22 @@ def is_client_open(*_):
     return ['client_open']
 
 
-def is_client_connected(connection, *_):
+def is_client_connected(connection, status, *_):
     ''' Returns if client is connected '''
+    if 'client_open' not in status:
+        return []
     if connection.url is None:
         return []
     return ['client_connected']
 
 
-def is_lcu_connected(connection, status, *_):
-    ''' Returns if lcu is connected '''
+def check_login_session(connection, status, *_):
+    ''' Checks login session and returns status '''
     if 'client_connected' not in status:
         return []
     if connection.url is None:
         return []
-    try:
-        res = connection.get('/lol-service-status/v1/lcu-status/')
-    except RequestException:
-        return []
-    if res.status_code == 404:
-        return []
-    res_json = res.json()
-    try:
-        if res_json['status'] == 'online':
-            return ['lcu_connected']
-    except KeyError:
-        pass
-    return []
-
-
-def check_login_session(connection, status, *_):
-    ''' Checks login session and returns status '''
-    if 'lcu_connected' not in status:
-        return []
-    if connection.url is None:
-        return []
-    try:
-        res = connection.get('/lol-login/v1/session/')
-    except RequestException:
-        return []
+    res = connection.get('/lol-login/v1/session')
     res_json = res.json()
     output = []
     if 'state' in res_json:
@@ -79,10 +56,7 @@ def is_leaverbuster_warning(connection, status, *_):
         return []
     if connection.url is None:
         return []
-    try:
-        res = connection.get('/lol-leaver-buster/v1/notifications/')
-    except RequestException:
-        return []
+    res = connection.get('/lol-leaver-buster/v1/notifications/')
     res_json = res.json()
     for notification in res_json:
         if notification['type'] == 'TaintedWarning':
@@ -90,38 +64,33 @@ def is_leaverbuster_warning(connection, status, *_):
     return []
 
 
-def is_wrong_account(connection, status, account):
+def should_change_account(connection, status, account):
     ''' Returns if wrong account is logged in  '''
     if 'login_succeed' not in status:
         return []
     if connection.url is None:
         return []
-    try:
-        res = connection.get('/lol-login/v1/login-platform-credentials/')
-    except RequestException:
-        return []
+    res = connection.get('/lol-login/v1/login-platform-credentials/')
     res_json = res.json()
     if res_json['username'].lower() != account.username.lower():
-        return ['wrong_account_logged_in']
+        return ['should_change_account']
     return []
 
 
 STATUS_LIST = [
     'client_open',
     'client_connected',
-    'lcu_connected',
     'login_in_progress',
     'login_succeed',
-    'wrong_account_logged_in',
+    'should_change_account',
     'banned',
 ]
 
 STATUS_FUNCTIONS = [
     is_client_open,
     is_client_connected,
-    is_lcu_connected,
     check_login_session,
-    is_wrong_account,
+    should_change_account,
 ]
 
 

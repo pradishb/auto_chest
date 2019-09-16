@@ -5,11 +5,7 @@ import time
 
 from settings import OUTPUT_DIR
 
-from .exceptions import CompletedAccount
-
-
-class LootRetrieveException(Exception):
-    ''' Raised when there is an error retriving loot '''
+from .exceptions import LootRetrieveException
 
 
 def get_loot(connection):
@@ -19,6 +15,12 @@ def get_loot(connection):
     if res_json == []:
         raise LootRetrieveException
     return res_json
+
+
+def get_player_loot_map(connection):
+    ''' Get player loot map from the server '''
+    res = connection.get('/lol-loot/v1/player-loot-map/')
+    return res.json()
 
 
 def get_key_fragment_count(loot_json):
@@ -67,23 +69,4 @@ def open_generic_chests(connection, account, repeat=1):
 
     file_name = '{}_{}.json'.format(account.username, time.time())
     with open(os.path.join(OUTPUT_DIR, 'chests', file_name), 'w') as file:
-        json.dump(res.json(), file)
-
-
-def open_chests(connection, account):
-    ''' Main function of the script '''
-    loot_json = get_loot(connection)
-    forgable_keys = get_key_fragment_count(loot_json)//3
-    if forgable_keys > 0:
-        forge(connection, forgable_keys)
-        return {'description': 'Forging {} keys'.format(forgable_keys)}
-    generic_chest_count = get_generic_chest_count(loot_json)
-    key_count = get_key_count(loot_json)
-    # if min(key_count, generic_chest_count) > 0:
-    #     open_generic_chests(connection, account)
-    #     return {
-    #         'generic_chest_count': generic_chest_count,
-    #         'key_count': key_count,
-    #         'description': 'Opening a chest'
-    #     }
-    raise CompletedAccount
+        json.dump(res.json(), file, indent=4,)

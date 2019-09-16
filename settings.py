@@ -7,10 +7,12 @@ CSV_DELIMITERS = ':;,'
 OUTPUT_DIR = 'output'
 
 # Script setttings
-ACTION_INTERVAL = 5  # s
+# ACTION_INVERVAL is set high which slows the process
+# but it prevents RequestsException
+ACTION_INTERVAL = 10  # s
 
 # Connection
-CONNECTION_READ_INTERVAL = 10  # s
+CONNECTION_READ_INTERVAL = 3  # s
 
 # Process
 CLIENT_PROCESS_NAME = 'LeagueClient.exe'
