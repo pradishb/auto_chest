@@ -1,5 +1,4 @@
 ''' Module to find the status of league client '''
-from requests import get
 from requests.exceptions import RequestException
 
 from process import is_running
@@ -33,8 +32,7 @@ def is_lcu_connected(connection, status, *_):
     if connection.url is None:
         return []
     try:
-        res = get(connection.url +
-                  '/lol-service-status/v1/lcu-status/', **connection.kwargs)
+        res = connection.get('/lol-service-status/v1/lcu-status/')
     except RequestException:
         return []
     if res.status_code == 404:
@@ -55,8 +53,7 @@ def check_login_session(connection, status, *_):
     if connection.url is None:
         return []
     try:
-        res = get(connection.url + '/lol-login/v1/session/',
-                  **connection.kwargs)
+        res = connection.get('/lol-login/v1/session/')
     except RequestException:
         return []
     res_json = res.json()
@@ -83,8 +80,7 @@ def is_leaverbuster_warning(connection, status, *_):
     if connection.url is None:
         return []
     try:
-        res = get(connection.url +
-                  '/lol-leaver-buster/v1/notifications/', **connection.kwargs)
+        res = connection.get('/lol-leaver-buster/v1/notifications/')
     except RequestException:
         return []
     res_json = res.json()
@@ -101,8 +97,7 @@ def is_wrong_account(connection, status, account):
     if connection.url is None:
         return []
     try:
-        res = get(connection.url +
-                  '/lol-login/v1/login-platform-credentials/', **connection.kwargs)
+        res = connection.get('/lol-login/v1/login-platform-credentials/')
     except RequestException:
         return []
     res_json = res.json()

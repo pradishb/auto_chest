@@ -19,6 +19,8 @@ from process import close_league_client
 BARRIER = threading.Barrier(2)
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(os.path.join(OUTPUT_DIR, 'chests'), exist_ok=True)
+os.makedirs(os.path.join(OUTPUT_DIR, 'accounts'), exist_ok=True)
 
 
 def terminate():
@@ -33,6 +35,7 @@ def main(stdscr):
         'Open account data csv, ctrl+shift+q to exit')
     if file_path is None:
         terminate()
+        return
 
     account_list = AccountList()
     with open(file_path, newline='') as csvfile:
@@ -47,6 +50,7 @@ def main(stdscr):
         current = account_list.current()
         if current is None:
             terminate()
+            return
         start_time = time.time()
         stdscr.clear()
         status = get_status(connection, current)

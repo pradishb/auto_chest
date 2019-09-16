@@ -2,6 +2,7 @@
 import time
 import threading
 
+import requests
 import urllib3
 import lcu_connector_python as lcu
 
@@ -45,3 +46,19 @@ class Connection:
             'timeout': 30
         }
         self.url = 'https://' + connection['url']
+
+    def get(self, url, *args, **kwargs):
+        ''' Wrapper around requests get method '''
+        return requests.get('{}{}'.format(self.url, url), *args, **kwargs, **self.kwargs)
+
+    def post(self, url, *args, **kwargs):
+        ''' Wrapper around requests post method '''
+        return requests.post('{}{}'.format(self.url, url), *args, **kwargs, **self.kwargs)
+
+    def patch(self, url, *args, **kwargs):
+        ''' Wrapper around requests patch method '''
+        return requests.patch('{}{}'.format(self.url, url), *args, **kwargs, **self.kwargs)
+
+    def put(self, url, *args, **kwargs):
+        ''' Wrapper around requests put method '''
+        return requests.put('{}{}'.format(self.url, url), *args, **kwargs, **self.kwargs)

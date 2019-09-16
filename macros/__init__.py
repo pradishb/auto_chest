@@ -1,6 +1,8 @@
 ''' Module to do macro tasks '''
 import requests
+
 from process import open_league_client, restart_league_client
+
 from .chest import open_chests
 from .exceptions import CompletedAccount
 
@@ -29,8 +31,7 @@ def login(connection, account):
             "password": account.password,
             "username": account.username,
         }
-        requests.post(connection.url +
-                      '/lol-login/v1/session/', **connection.kwargs, json=data)
+        connection.post('/lol-login/v1/session/', json=data)
         return {'description': 'Login request sent'}
     except requests.RequestException:
         return {'error': 'RequestException'}
