@@ -3,6 +3,7 @@ import json
 import os
 import time
 
+from images import download_image
 from settings import OUTPUT_DIR
 
 from .exceptions import LootRetrieveException
@@ -20,7 +21,10 @@ def get_loot(connection):
 def get_player_loot_map(connection):
     ''' Get player loot map from the server '''
     res = connection.get('/lol-loot/v1/player-loot-map/')
-    return res.json()
+    res_json = res.json()
+    for loot in res_json.values():
+        download_image(connection, loot['tilePath'])
+    return res_json
 
 
 def get_key_fragment_count(loot_json):
@@ -66,14 +70,18 @@ def open_generic_chests(connection, account, repeat=1):
     res = connection.post(
         '/lol-loot/v1/recipes/CHEST_generic_OPEN/craft?repeat={}'.format(
             repeat), json=['CHEST_generic', 'MATERIAL_key'])
+    res_json = res.json()
 
     timestamp = time.time()
     output = {
         'username': account.username,
         'timestamp': timestamp,
-        'response': res.json(),
+        'response': res_json,
     }
     file_name = '{}_{}.json'.format(account.username, timestamp)
 
     with open(os.path.join(OUTPUT_DIR, 'chests', file_name), 'w') as file:
         json.dump(output, file, indent=4,)
+
+    for loot in res_json['added']:
+        download_image(connection, loot['tilePath'])

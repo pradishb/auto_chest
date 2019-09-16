@@ -2,6 +2,7 @@
 import json
 import os
 
+from images import download_image
 from settings import OUTPUT_DIR
 
 from .exceptions import BadResponseException
@@ -28,6 +29,8 @@ def get_owned_champions(connection):
         raise BadResponseException
     filtered = list(
         filter(lambda m: m["ownership"]["owned"], res_json))
+    for champion in filtered:
+        download_image(connection, champion['squarePortraitPath'])
     return filtered
 
 
