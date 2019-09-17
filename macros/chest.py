@@ -84,4 +84,4 @@ def open_generic_chests(connection, account, repeat=1):
         json.dump(output, file, indent=4,)
 
     for loot in res_json['added']:
-        download_image(connection, loot['tilePath'])
+        download_image(connection, loot['playerLoot']['tilePath'])
